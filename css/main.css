@@ -22,6 +22,11 @@ table {
 	font-size: 1.5em;
 }
 
+.revealed{
+	background-color: rgb(163, 163, 163);  
+
+}
+
 .cell:hover {
   background-color: #555;  
   color: white;            

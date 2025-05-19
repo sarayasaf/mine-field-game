@@ -15,6 +15,9 @@ var gGame = {
     secsPassed: 0
 }
 
+var minesArr = []
+var revealedCellsArr = []
+
 init() //playing the game
 
 // ----------------- RENDER BOARD -----------------
@@ -31,13 +34,18 @@ function renderBoard(mat, selector){
             var cellContent = ''
 
             if(cell.isRevealed) {
+                className += ' revealed'
                 if(cell.isMine) cellContent = '💣'
                 else if (cell.minesAroundCount > 0) cellContent = cell.minesAroundCount
             } else if(cell.isMarked) {
                 cellContent = '🚩'
             }
 
-            strHTML += `<td class="${className}" onclick="onCellClicked(${i}, ${j})">${cellContent}</td>`
+            strHTML += `<td class="${className}" 
+                 onclick="onCellClicked(${i}, ${j})" 
+                 oncontextmenu="onCellMarked(this, ${i}, ${j}); return false;">
+                ${cellContent}
+            </td>`
         }
 
         strHTML += '</tr>'  // חשוב! לסגור את השורה
@@ -96,6 +104,7 @@ function createCell() {
 // ----------------- PLACE MINES -----------------
 
 function placeMines(board){
+
     console.log('Starting to place mines...')
     var minesToPlace = gLevel.MINES
     var size = gLevel.SIZE
@@ -109,6 +118,7 @@ function placeMines(board){
     if(!board[i][j].isMine){
         board[i][j].isMine = true
         console.log('Placed mine at:', i, j)
+        minesArr.push(board[i][j])
         minesToPlace--
     }
   }
@@ -165,12 +175,49 @@ function onCellClicked(i, j) {
 
     if (cell.isRevealed || cell.isMarked) return
     cell.isRevealed = true
+    revealedCellsArr.push(cell)
+   
+
 
     if (cell.isMine) {
         alert('BOOM!💥 You clicked on a mine.')
         gGame.isOn = false
     }
 
+    checkGameOver()
     renderBoard(gBoard, '.board-container')
+}
+
+// ----------------- onCellMarked -----------------
+
+function onCellMarked(elCell,  i, j){
+    console.log('Right-click on cell:', i, j)
+    var cell = gBoard[i][j]
+
+    if(cell.isRevealed)return
+    cell.isMarked = !cell.isMarked
+    checkGameOver()
+    renderBoard(gBoard, '.board-container')
+
+}
+
+// ----------------- game over -----------------
+
+function checkGameOver(){
+    console.log('checking game over...')
+
+    for(var i = 0; i < minesArr.length; i++){
+        var mine = minesArr[i]
+
+        console.log(mine)
+        if(!mine.isMarked) return
+
+    }
+
+    if(revealedCellsArr.length === (gLevel.SIZE*gLevel.SIZE - gLevel.MINES)){
+        console.log('you win!')
+    }
+       
+
 }
 
