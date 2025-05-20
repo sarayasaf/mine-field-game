@@ -43,7 +43,7 @@ function renderBoard(mat, selector){
 
             strHTML += `<td class="${className}" 
                  onclick="onCellClicked(${i}, ${j})" 
-                 oncontextmenu="onCellMarked(this, ${i}, ${j}); return false;">
+                 oncontextmenu="onCellMarked(${i}, ${j}); return false;">
                 ${cellContent}
             </td>`
         }
@@ -108,7 +108,6 @@ function placeMines(board){
     console.log('Starting to place mines...')
     var minesToPlace = gLevel.MINES
     var size = gLevel.SIZE
-    
 
     while(minesToPlace > 0) {
         var i = getRandomInt(0, size)
@@ -175,14 +174,19 @@ function onCellClicked(i, j) {
 
     if (cell.isRevealed || cell.isMarked) return
     cell.isRevealed = true
+    gGame.revealedCount++
     revealedCellsArr.push(cell)
-   
-
+    
 
     if (cell.isMine) {
         alert('BOOM!💥 You clicked on a mine.')
         gGame.isOn = false
+    } 
+    if(cell.minesAroundCount === 0){
+        expandReveal(gBoard, i, j)
     }
+
+    
 
     checkGameOver()
     renderBoard(gBoard, '.board-container')
@@ -190,7 +194,7 @@ function onCellClicked(i, j) {
 
 // ----------------- onCellMarked -----------------
 
-function onCellMarked(elCell,  i, j){
+function onCellMarked( i, j){
     console.log('Right-click on cell:', i, j)
     var cell = gBoard[i][j]
 
@@ -221,3 +225,28 @@ function checkGameOver(){
 
 }
 
+// ----------------- game over -----------------
+
+function expandReveal(board, rowIdx, colIdx) {
+
+
+    for(var i = rowIdx - 1; i <= rowIdx + 1; i++){
+        if (i < 0 || i >= board.length) continue
+
+        for(var j = colIdx - 1; j <= colIdx + 1; j++){
+            if (j < 0 || j >= board[0].length) continue
+            if (i === rowIdx && j === colIdx) continue
+
+            var neighbor = board[i][j]
+
+            if(neighbor.isRevealed || neighbor.isMarked || neighbor.isMine) continue
+            onCellClicked(i,j)
+            // neighbor.isRevealed = true
+            // gGame.revealedCount++
+            // revealedCellsArr.push(neighbor)
+
+        }
+       
+    }
+
+}
